@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SenNano Website
+
+Revolutionary graphene-based nanosensor technology for water quality monitoring. Built for the Conrad Challenge.
+
+## Tech Stack
+
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Utility-first styling
+- **Framer Motion** - Advanced animations
+- **React Three Fiber** - 3D graphics with Three.js
+- **Lenis** - Smooth scroll
+- **GSAP** - Animation library
+
+## Features
+
+- 🎨 Futuristic design without purple/gradients/typical AI aesthetics
+- ⚡ Highly animated with particle systems and 3D elements
+- 🔬 Scientific content about graphene quantum dots
+- 🌍 Global impact statistics and metrics
+- 📱 Fully responsive design
+- ⚡ Performance optimized
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+/app
+  page.tsx          # Main home page
+  layout.tsx        # Root layout
+  globals.css       # Global styles
+/components
+  HeroSection.tsx   # Landing section with 3D particles
+  TechnologySection.tsx  # Tech features with 3D sphere
+  ScienceSection.tsx     # Detection process explanation
+  ImpactSection.tsx      # Global impact statistics
+  Footer.tsx             # Site footer
+```
 
-## Learn More
+## About SenNano
 
-To learn more about Next.js, take a look at the following resources:
+SenNano develops graphene-based nanosensors for detecting heavy metal contamination in water. Using fluorescence quenching technology, the system detects lead, mercury, arsenic, cadmium, and chromium at parts-per-billion levels with 99.8% accuracy.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Key Innovations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Graphene quantum dots for superior detection
+- Real-time analysis (<1 second response)
+- Ultra-sensitive (ppb detection limits)
+- 90% more cost-effective than traditional methods
 
-## Deploy on Vercel
+### Global Impact
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- 2.2 billion people lack safe drinking water
+- 500,000 annual deaths from water contamination
+- 80% of developing communities face water quality issues
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built with cutting-edge technology to revolutionize water quality monitoring worldwide.
+
