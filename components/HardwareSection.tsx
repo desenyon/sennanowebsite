@@ -29,48 +29,22 @@ function RotatingChip() {
   );
 }
 
-const hardwareSpecs = [
-  {
-    category: 'Wearable Tag',
-    price: '$80-100',
-    components: [
-      { name: 'DWM3000 UWB Module', spec: 'DecaWave chip, <10cm ranging' },
-      { name: 'RFM95W LoRa Radio', spec: '868MHz, 1-2km range' },
-      { name: 'MPU6050 IMU', spec: '6-axis gyro + accelerometer' },
-      { name: 'BMP280 Barometer', spec: 'Vertical position tracking' },
-      { name: 'ESP32 Controller', spec: 'Dual-core, WiFi optional' },
-      { name: 'LiPo Battery', spec: '2000mAh, 12h runtime' },
-    ],
-    features: ['Waterproof casing', 'OLED status display', 'Emergency button', 'LED indicators'],
-  },
-  {
-    category: 'Fixed Anchor',
-    price: '$60-75',
-    components: [
-      { name: 'DWM3000 UWB Module', spec: 'Time sync master' },
-      { name: 'RFM95W LoRa Radio', spec: 'Data relay to base' },
-      { name: 'ESP32 Controller', spec: 'Mesh networking' },
-      { name: 'Power Supply', spec: 'AC or 12V battery backup' },
-    ],
-    features: ['Magnetic mounting', 'Auto-calibration', '360° coverage', 'Weatherproof IP67'],
-  },
-  {
-    category: 'Drone Payload',
-    price: '$150-200',
-    components: [
-      { name: 'DWM3000 UWB Module', spec: 'Mobile anchor beacon' },
-      { name: 'RFM95W LoRa Radio', spec: 'High-power relay module' },
-      { name: 'GPS Module', spec: 'Drone absolute positioning' },
-      { name: 'Raspberry Pi Zero', spec: 'Onboard processing' },
-    ],
-    features: ['Lightweight <200g', 'Gimbal-stabilized', 'Hot-swappable battery', 'Auto-hover mode'],
-  },
-];
+const hardwareSpecs = {
+  category: 'Wearable Tag',
+  price: '$80-100',
+  components: [
+    { name: 'DWM3000 UWB Module', spec: 'DecaWave chip, <10cm ranging' },
+    { name: 'RFM95W LoRa Radio', spec: '868MHz, 1-2km range' },
+    { name: 'MPU6050 IMU', spec: '6-axis gyro + accelerometer' },
+    { name: 'BMP280 Barometer', spec: 'Vertical position tracking' },
+    { name: 'ESP32 Controller', spec: 'Dual-core, WiFi optional' },
+    { name: 'LiPo Battery', spec: '2000mAh, 12h runtime' },
+  ],
+};
 
 export default function HardwareSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-  const [selectedHardware, setSelectedHardware] = useState(0);
 
   return (
     <section id="hardware" ref={sectionRef} className="relative py-32 px-4 bg-gradient-to-b from-black via-gray-900 to-black">
@@ -119,34 +93,18 @@ export default function HardwareSection() {
             transition={{ duration: 0.8 }}
             className="space-y-6"
           >
-            <div className="flex gap-4 mb-8">
-              {hardwareSpecs.map((hw, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedHardware(index)}
-                  className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 border-2 ${
-                    selectedHardware === index
-                      ? 'bg-blue-600 border-blue-400 text-white'
-                      : 'bg-gray-900/50 border-white/10 text-gray-400 hover:border-blue-400/50'
-                  }`}
-                >
-                  {hw.category}
-                </button>
-              ))}
-            </div>
-
             <div className="border border-white/10 rounded-2xl bg-gray-900/80 backdrop-blur-sm p-8">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-3xl font-black text-white">
-                  {hardwareSpecs[selectedHardware].category}
+                  {hardwareSpecs.category}
                 </h3>
                 <span className="text-2xl font-black text-blue-400">
-                  {hardwareSpecs[selectedHardware].price}
+                  {hardwareSpecs.price}
                 </span>
               </div>
 
-              <div className="space-y-4 mb-6">
-                {hardwareSpecs[selectedHardware].components.map((component, index) => (
+              <div className="space-y-4">
+                {hardwareSpecs.components.map((component, index) => (
                   <div key={index} className="flex items-start gap-3 p-3 bg-black/30 rounded-lg">
                     <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0" />
                     <div>
@@ -154,17 +112,6 @@ export default function HardwareSection() {
                       <p className="text-gray-400 text-sm">{component.spec}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {hardwareSpecs[selectedHardware].features.map((feature, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-blue-500/10 border border-blue-400/30 rounded-full text-blue-300 text-sm"
-                  >
-                    {feature}
-                  </span>
                 ))}
               </div>
             </div>
