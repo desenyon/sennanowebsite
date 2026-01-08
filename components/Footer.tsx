@@ -49,7 +49,7 @@ export default function Footer() {
             <h4 className="text-white font-medium mb-4">Resources</h4>
             <div className="space-y-2">
               <a
-                href="https://drive.google.com/file/d/13uUrRRNAWFiqmfERm0bjMEKXZtQWkUwH/view?usp=sharing"
+                href="https://drive.google.com/file/d/1aI_h8WOz5KdIhk8VS4jU8Eo9Zy23YcHG/view?usp=sharing"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-500 text-sm hover:text-gray-300 transition-colors"

@@ -108,7 +108,7 @@ export default function HeroSection() {
             Build Plan
           </button>
           <a
-            href="https://drive.google.com/file/d/13uUrRRNAWFiqmfERm0bjMEKXZtQWkUwH/view?usp=sharing"
+            href="https://drive.google.com/file/d/1aI_h8WOz5KdIhk8VS4jU8Eo9Zy23YcHG/view?usp=sharing"
             target="_blank"
             rel="noopener noreferrer"
             className="px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium rounded transition-colors duration-200 flex items-center gap-2"
