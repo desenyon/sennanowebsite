@@ -5,47 +5,47 @@ import { motion, useInView } from 'framer-motion';
 
 const architectureFeatures = [
   {
-    title: 'Ultra-Wideband Positioning',
-    description: 'Fixed anchor beacons emit UWB pulses that wearable tags use for centimeter-level ranging via TDOA trilateration',
+    title: 'Wearable Tag',
+    description: 'DWM3000 UWB + Pico 2 W MCU + IMU/barometer. Single 18650 Li-ion battery with TPS61022 boost converter for stable RF power',
+    metric: '12h runtime',
+  },
+  {
+    title: 'Fixed Anchor Network',
+    description: 'Known-position reference points with DWM3000 modules. Non-coplanar placement with varied heights for optimal GDOP',
     metric: '<10cm accuracy',
   },
   {
-    title: 'LoRa Radio Network',
-    description: 'Sub-GHz long-range communication for position data relay even through concrete and metal structures',
-    metric: '1-2km range',
+    title: 'Drone Mobile Anchor',
+    description: 'Time-varying anchor position improves geometry when fixed anchors are blocked/damaged. LoRa relay extends range',
+    metric: 'Adaptive GDOP',
   },
   {
-    title: 'Drone Relay System',
-    description: 'Mobile anchor + radio relay when fixed infrastructure is destroyed or unavailable during emergency operations',
-    metric: 'Zero infrastructure',
-  },
-  {
-    title: 'Wearable Module',
-    description: 'IMU + barometer fusion for vertical positioning, battery-powered for 12+ hour operations',
-    metric: '12h runtime',
+    title: 'Command Software',
+    description: 'ML-assisted NLOS correction + weighted multilateration + IMU/barometer fusion. Real-time confidence scoring',
+    metric: 'Real-time tracks',
   },
 ];
 
 const systemLayers = [
   {
     layer: '01',
-    name: 'Hardware Layer',
-    components: ['UWB Anchors', 'Wearable Tags', 'Drone Payload', 'IMU Sensors'],
+    name: 'Sensor + RF Layer',
+    components: ['DWM3000 UWB ToF', 'BMI270/ICM-20948 IMU', 'BMP388 Barometer', 'SX1276 LoRa'],
   },
   {
     layer: '02',
-    name: 'Communication Layer',
-    components: ['LoRa 868MHz', 'UWB Pulses', 'TDOA Ranging', 'Mesh Network'],
+    name: 'ML Correction Layer',
+    components: ['NLOS Bias Estimation', 'Link Quality Features', 'Gradient-Boosted Trees', 'Uncertainty Weighting'],
   },
   {
     layer: '03',
-    name: 'Processing Layer',
-    components: ['Trilateration Engine', 'Confidence Scoring', 'Predict + Correct', 'IMU Fusion'],
+    name: 'Position Solve Layer',
+    components: ['Weighted Multilateration', 'Kalman Predict + Correct', 'Barometric Z-Constraint', 'GDOP Analysis'],
   },
   {
     layer: '04',
     name: 'Interface Layer',
-    components: ['Real-time Dashboard', '3D Visualization', 'Alert System', 'Command Console'],
+    components: ['Floor Plan Overlay', 'Confidence Color Coding', 'Stale Position Alerts', 'Man-Down Detection'],
   },
 ];
 
@@ -66,10 +66,10 @@ export default function SystemSection() {
             System Architecture
           </span>
           <h2 className="text-5xl md:text-7xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-white">
-            Hybrid Positioning System
+            Four Tightly Integrated Components
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Combining Ultra-Wideband ranging, LoRa networking, and drone-assisted localization for GPS-free indoor tracking
+            Wearable Tag + Fixed UWB Anchor Network + Drone Mobile Anchor + Command Software delivering real-time position with confidence scoring
           </p>
         </motion.div>
 
@@ -202,6 +202,110 @@ export default function SystemSection() {
             <p className="text-white text-lg">
               Each UWB distance defines a sphere. With 4+ anchors, sphere intersection constrains the position to a unique point. 
               The system solves for the point that best satisfies all distance constraints simultaneously, achieving sub-10cm accuracy.
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Drone Mobile Anchor Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 1.2 }}
+          className="border border-white/10 rounded-2xl bg-gradient-to-br from-blue-900/20 to-black p-8 md:p-12"
+        >
+          <h3 className="text-3xl font-bold text-center mb-6 text-white">
+            Drone Mobile Anchor — Function + Integration
+          </h3>
+          <p className="text-center text-gray-400 mb-10 max-w-3xl mx-auto">
+            Acts as an additional anchor with time-varying known position. Improves geometry when fixed anchors are blocked, damaged, or create weak intersection angles.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="p-6 bg-black/40 rounded-xl border border-blue-400/20">
+              <h4 className="text-lg font-bold text-blue-400 mb-3">Drone Payload</h4>
+              <ul className="text-gray-400 text-sm space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>UWB module + controller</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Behaves like fixed anchor</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Optional LoRa relay</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Stability-preserving mount</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Reduced RF blockage design</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-6 bg-black/40 rounded-xl border border-blue-400/20">
+              <h4 className="text-lg font-bold text-blue-400 mb-3">Mathematical Benefits</h4>
+              <ul className="text-gray-400 text-sm space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Adds extra range constraint</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Improves multilateration solve</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Reduces GDOP magnitude</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Improves spatial diversity</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Better condition number</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-6 bg-black/40 rounded-xl border border-blue-400/20">
+              <h4 className="text-lg font-bold text-blue-400 mb-3">When It Helps</h4>
+              <ul className="text-gray-400 text-sm space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Fixed anchors blocked</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Building layout causes weak angles</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Anchors missing/damaged</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Communication range extension</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Infrastructure destroyed</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="p-6 bg-blue-500/10 border border-blue-400/30 rounded-xl text-center">
+            <p className="text-blue-300 font-semibold mb-2">Engineering Solution, Not a Gimmick</p>
+            <p className="text-gray-300">
+              The drone addresses a specific failure mode: anchor geometry degradation. 
+              By repositioning to create better intersection angles, it's an engineering solution 
+              to a mathematical problem, making the system more robust in real-world emergency scenarios.
             </p>
           </div>
         </motion.div>

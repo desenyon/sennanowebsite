@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import 'katex/dist/katex.min.css';
 
 export const metadata: Metadata = {
-  title: "Sentinel Nano S1 - GPS-Free Firefighter Positioning",
-  description: "Mission-critical indoor tracking using Ultra-Wideband beacons and drone-assisted localization for firefighter safety",
+  title: "Sentinal Nano S1 | Conrad Challenge 2026",
+  description: "Indoor positioning system for firefighters using UWB multilateration. No GPS required.",
 };
 
 export default function RootLayout({

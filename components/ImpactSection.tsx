@@ -1,168 +1,188 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 
-const impactStats = [
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } }
+};
+
+const phases = [
   {
-    number: '60+',
-    label: 'Firefighter Deaths Annually',
-    description: 'In the US due to disorientation and structural collapse',
+    num: 1,
+    title: 'Tag Bring-up',
+    desc: 'Electronics + firmware',
+    status: 'foundation',
+    items: [
+      'Pico ↔ DWM3000 SPI communication stable',
+      '2-way ranging verified in open space',
+      'Logs: (timestamp, anchor_id, d_meas, quality)'
+    ]
   },
   {
-    number: '100K+',
-    label: 'Firefighter Injuries',
-    description: 'Per year globally from preventable navigation failures',
+    num: 2,
+    title: 'Anchor Network',
+    desc: '4–6 fixed units',
+    status: 'foundation',
+    items: [
+      'Anchors respond reliably to ranging requests',
+      'Unique IDs assigned and consistent',
+      'Position config file with surveyed coordinates'
+    ]
   },
   {
-    number: '87%',
-    label: 'Improved Survival Rate',
-    description: 'With real-time indoor positioning during emergencies',
+    num: 3,
+    title: 'Position Solver',
+    desc: 'Base station software',
+    status: 'core',
+    items: [
+      'Multilateration runs with 4+ anchors',
+      'Outlier rejection reduces position jumps',
+      'Real-time display with confidence indicator'
+    ]
   },
   {
-    number: '<30s',
-    label: 'Rescue Response Time',
-    description: 'Average reduction with precision location tracking',
+    num: 4,
+    title: 'ML Integration',
+    desc: 'Bias correction model',
+    status: 'enhancement',
+    items: [
+      'Training dataset: LOS + NLOS samples',
+      'Model outputs bias and uncertainty per link',
+      'Corrected ranges improve positioning accuracy'
+    ]
   },
+  {
+    num: 5,
+    title: 'Drone Anchor',
+    desc: 'Optional geometry improvement',
+    status: 'optional',
+    items: [
+      'Drone participates as mobile anchor',
+      'Demonstrates improved accuracy in obstructed areas'
+    ]
+  }
 ];
 
-const useCases = [
-  {
-    title: 'Structural Fire Response',
-    scenario: 'Multi-story building fire with zero visibility and structural instability',
-    solution: 'Real-time tracking prevents disorientation, enables rapid accountability checks, guides evacuation routes',
-    critical: true,
-  },
-  {
-    title: 'Search & Rescue Operations',
-    scenario: 'Collapsed structure or disaster zone with multiple trapped victims',
-    solution: 'Coordinate team movements, prevent duplicate searches, track entry/exit times for air supply management',
-    critical: true,
-  },
-  {
-    title: 'Wildfire Ground Operations',
-    scenario: 'Remote terrain with poor radio coverage and rapid fire spread',
-    solution: 'Drone relay maintains communication when infrastructure fails, tracks crew locations across vast areas',
-    critical: false,
-  },
-  {
-    title: 'HAZMAT Incidents',
-    scenario: 'Toxic environment requiring precise time tracking and contamination zones',
-    solution: 'Monitor exposure duration, create digital perimeters, coordinate decontamination protocols',
-    critical: false,
-  },
-];
+const statusColors = {
+  foundation: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', label: 'Foundation' },
+  core: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', label: 'Core' },
+  enhancement: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', label: 'Enhancement' },
+  optional: { bg: 'bg-gray-500/10', border: 'border-gray-500/30', text: 'text-gray-400', label: 'Optional' },
+};
 
 export default function ImpactSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-
   return (
-    <section id="impact" ref={sectionRef} className="relative py-32 px-4 bg-gradient-to-b from-black via-blue-950/20 to-black">
-      <div className="max-w-7xl mx-auto">
+    <section id="build" className="py-32 px-6 md:px-12 lg:px-24 bg-black border-t border-gray-800/50">
+      <div className="max-w-6xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="mb-16"
         >
-          <span className="text-blue-400 font-mono text-sm tracking-wider uppercase mb-4 block">
-            Mission-Critical Impact
-          </span>
-          <h2 className="text-5xl md:text-7xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-white">
-            Saving Lives Through Technology
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-blue-500 font-mono text-sm">07</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent max-w-[100px]" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Build Plan
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Every second matters in emergency response. Sentinel Nano provides the situational awareness that saves firefighter lives.
+          <p className="text-gray-500 max-w-xl">
+            Development phases and deliverables for the Sentinal Nano system.
           </p>
         </motion.div>
 
-        {/* Impact Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
-          {impactStats.map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="relative group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl" />
-              <div className="relative p-8 border border-white/10 rounded-2xl bg-gray-900/80 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300 text-center">
-                <p className="text-5xl font-black text-blue-400 mb-2">{stat.number}</p>
-                <p className="text-white font-bold mb-2">{stat.label}</p>
-                <p className="text-sm text-gray-400 leading-relaxed">{stat.description}</p>
-              </div>
-            </motion.div>
-          ))}
+        {/* Timeline */}
+        <div className="relative mb-20">
+          {/* Connecting line */}
+          <div className="absolute left-[19px] top-8 bottom-8 w-px bg-gradient-to-b from-blue-500/50 via-green-500/50 to-gray-500/30 hidden md:block" />
+          
+          <div className="space-y-6">
+            {phases.map((phase, index) => {
+              const colors = statusColors[phase.status as keyof typeof statusColors];
+              return (
+                <motion.div
+                  key={phase.num}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-30px" }}
+                  variants={{
+                    hidden: { opacity: 0, x: -20 },
+                    visible: { opacity: 1, x: 0, transition: { duration: 0.4, delay: index * 0.08, ease: 'easeOut' as const } }
+                  }}
+                  className="relative flex gap-6"
+                >
+                  {/* Phase number */}
+                  <div className={`w-10 h-10 rounded-xl ${colors.bg} border ${colors.border} flex items-center justify-center flex-shrink-0 z-10`}>
+                    <span className={`font-mono text-sm ${colors.text}`}>{phase.num}</span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{phase.title}</h3>
+                        <p className="text-gray-500 text-sm">{phase.desc}</p>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>
+                        {colors.label}
+                      </span>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      {phase.items.map((item, i) => (
+                        <div key={i} className="flex items-start gap-3 text-sm">
+                          <svg className="w-4 h-4 text-gray-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
+                          </svg>
+                          <span className="text-gray-400">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Use Cases */}
+        {/* Summary */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="mb-24"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
         >
-          <h3 className="text-3xl font-bold text-center mb-12 text-white">
-            Real-World Applications
-          </h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {useCases.map((useCase, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
-                className="relative group"
-              >
-                <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl ${
-                  useCase.critical ? 'bg-gradient-to-br from-red-600/30 to-blue-600/30' : 'bg-gradient-to-br from-blue-600/20 to-transparent'
-                }`} />
-                <div className="relative p-8 border border-white/10 rounded-2xl bg-gray-900/80 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
-                  <div className="flex justify-between items-start mb-4">
-                    <h4 className="text-2xl font-bold text-white">{useCase.title}</h4>
-                    {useCase.critical && (
-                      <span className="px-3 py-1 bg-red-500/20 border border-red-400/50 rounded-full text-red-300 text-xs font-bold uppercase">
-                        Critical
-                      </span>
-                    )}
-                  </div>
-                  <div className="mb-4 p-4 bg-black/30 rounded-lg border-l-4 border-blue-400">
-                    <p className="text-sm text-gray-400 uppercase font-mono mb-2">Scenario</p>
-                    <p className="text-gray-300">{useCase.scenario}</p>
-                  </div>
-                  <div className="p-4 bg-blue-500/10 rounded-lg border-l-4 border-blue-500">
-                    <p className="text-sm text-blue-400 uppercase font-mono mb-2">Solution</p>
-                    <p className="text-gray-200">{useCase.solution}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-blue-500 font-mono text-sm">08</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent max-w-[100px]" />
           </div>
-        </motion.div>
-
-        {/* Call to Action */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="text-center border border-white/10 rounded-2xl bg-gradient-to-br from-blue-900/30 via-gray-900 to-black p-12 backdrop-blur-sm"
-        >
-          <h3 className="text-4xl font-black mb-6 text-white">
-            Technology That Protects Those Who Protect Us
-          </h3>
-          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Sentinel Nano isn't just a tracking system—it's a lifeline. When communication fails and visibility drops to zero, our technology ensures every firefighter comes home.
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Technical Summary
+          </h2>
+          <p className="text-gray-500 max-w-xl mb-12">
+            What the Sentinal Nano S1 provides.
           </p>
-          <div className="flex gap-6 justify-center flex-wrap">
-            <button className="group relative px-8 py-4 bg-blue-600 hover:bg-blue-500 transition-all duration-300 rounded-lg overflow-hidden border border-blue-400/50">
-              <span className="relative z-10 font-bold text-white">Request Demo</span>
-              <div className="absolute inset-0 bg-blue-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
-            </button>
-            <button className="px-8 py-4 border-2 border-white/30 hover:border-blue-400 hover:text-blue-400 transition-all duration-300 rounded-lg backdrop-blur-sm">
-              <span className="font-bold">Technical Specifications</span>
-            </button>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { label: 'Hardware', value: 'Wearable UWB tag', detail: 'Pico 2 W + DWM3000, 12h battery', color: 'blue' },
+              { label: 'Geometry', value: 'Fixed anchors', detail: 'Surveyed coordinates, multilateration', color: 'green' },
+              { label: 'ML Component', value: 'NLOS correction', detail: 'Per-link bias from signal features', color: 'purple' },
+              { label: 'Tracking', value: 'Predict-correct filter', detail: 'Smooth, stable position estimates', color: 'orange' },
+              { label: 'Output', value: 'Real-time (x, y, z)', detail: 'With confidence metric', color: 'cyan' },
+            ].map((item) => (
+              <div 
+                key={item.label}
+                className="p-5 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors"
+              >
+                <p className={`text-${item.color}-400 text-xs font-medium uppercase tracking-wider mb-2`}>{item.label}</p>
+                <p className="text-white font-medium mb-1">{item.value}</p>
+                <p className="text-gray-500 text-sm">{item.detail}</p>
+              </div>
+            ))}
           </div>
         </motion.div>
       </div>

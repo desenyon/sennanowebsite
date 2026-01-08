@@ -8,12 +8,6 @@
   }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -23,12 +17,12 @@ body {
 }
 
 ::selection {
-  background-color: rgba(0, 255, 255, 0.3);
+  background-color: rgba(59, 130, 246, 0.3);
   color: white;
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -36,10 +30,23 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #00ffff, #00aa88);
-  border-radius: 5px;
+  background: #333;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #00dddd, #008877);
+  background: #444;
+}
+
+/* KaTeX overrides for dark theme */
+.katex {
+  font-size: 1em;
+}
+
+.katex .base {
+  color: #fff;
+}
+
+.katex-display {
+  margin: 0.5em 0;
 }

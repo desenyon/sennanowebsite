@@ -1,100 +1,104 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } }
+};
 
 const teamMembers = [
   {
     name: 'Naitik Gupta',
-    role: 'Algorithmic Software Lead',
-    bio: 'Specializes in localization algorithms and sensor fusion. Leads the development of the core positioning system.',
+    role: 'Algorithm Lead',
+    bio: 'Localization algorithms and sensor fusion',
     image: '/team/naitik.jpeg',
   },
   {
     name: 'Julian Juan',
-    role: 'Modeling Researcher',
-    bio: 'Expert in 3D modeling and simulation. Created the digital math model + CAD Models.',
+    role: 'Modeling',
+    bio: '3D modeling, simulation, and CAD',
     image: '/team/julian.jpeg',
   },
   {
     name: 'Ming Ying',
-    role: 'Material Science Researcher',
-    bio: 'Background in material science and rugged electronics. Worked on hardware durability and environmental testing, as well choosing materials for the device casings.',
+    role: 'Materials',
+    bio: 'Hardware durability and environmental testing',
     image: '/team/ming.jpeg',
   },
   {
     name: 'Ayush Iyer',
-    role: 'Firmware Engineer',
-    bio: 'Specializes in IMU sensor fusion and Kalman filtering. Implemented the drone to wearable tag communication protocols.',
+    role: 'Firmware',
+    bio: 'IMU fusion and communication protocols',
     image: '/team/ayush.jpeg',
   },
   {
     name: 'Gavyn Liu',
     role: 'Hardware Lead',
-    bio: 'Aerospace engineering background. Designed the mobile anchor payload and autonomous relay system. Worked on circuit design and PCB layout.',
+    bio: 'Circuit design and PCB layout',
     image: '/team/gavyn.jpeg',
   },
 ];
 
 export default function AboutSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-
   return (
-    <section id="about" ref={sectionRef} className="relative py-32 px-4 bg-gradient-to-b from-black via-gray-900 to-black">
-      <div className="max-w-7xl mx-auto">
+    <section id="about" className="py-32 px-6 md:px-12 lg:px-24 bg-black border-t border-gray-800/50">
+      <div className="max-w-6xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="mb-16"
         >
-          <span className="text-blue-400 font-mono text-sm tracking-wider uppercase mb-4 block">
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-blue-500 font-mono text-sm">09</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent max-w-[100px]" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
             The Team
-          </span>
-          <h2 className="text-5xl md:text-7xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-white">
-            About Us
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            A team of engineers passionate about saving lives through innovative positioning technology
+          <p className="text-gray-500 max-w-xl">
+            The people behind Sentinal Nano S1.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {teamMembers.map((member, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="relative group"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-30px" }}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.4, delay: index * 0.08, ease: 'easeOut' as const } }
+              }}
+              className="group"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl" />
-              <div className="relative p-8 border border-white/10 rounded-2xl bg-gray-900/80 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
-                {/* Team member photo */}
-                <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-blue-400/30 bg-gray-800">
+              <div className="p-4 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl hover:border-gray-700 transition-all duration-300 text-center">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-xl overflow-hidden border border-gray-700 bg-gray-900 group-hover:border-blue-500/50 transition-colors">
                   <Image
                     src={member.image}
                     alt={member.name}
-                    width={128}
-                    height={128}
+                    width={80}
+                    height={80}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // Fallback to letter avatar if image fails to load
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
                       const parent = target.parentElement;
                       if (parent) {
-                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-400"><span class="text-4xl font-black text-white">${member.name.charAt(0)}</span></div>`;
+                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900"><span class="text-2xl font-medium text-gray-500">${member.name.charAt(0)}</span></div>`;
                       }
                     }}
                   />
                 </div>
                 
-                <h3 className="text-2xl font-bold text-white mb-2 text-center">{member.name}</h3>
-                <p className="text-blue-400 text-sm font-mono mb-4 text-center uppercase tracking-wide">{member.role}</p>
-                <p className="text-gray-400 text-sm leading-relaxed text-center">{member.bio}</p>
+                <h3 className="text-white font-medium mb-1">{member.name}</h3>
+                <p className="text-blue-400 text-xs font-medium mb-2">{member.role}</p>
+                <p className="text-gray-500 text-xs leading-relaxed">{member.bio}</p>
               </div>
             </motion.div>
           ))}

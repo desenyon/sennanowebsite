@@ -1,154 +1,242 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import { motion } from 'framer-motion';
+import 'katex/dist/katex.min.css';
+import { InlineMath } from 'react-katex';
 
-function RotatingChip() {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.2;
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.4;
-    }
-  });
-
-  return (
-    <mesh ref={meshRef}>
-      <boxGeometry args={[2, 0.2, 3]} />
-      <meshStandardMaterial
-        color="#0ea5e9"
-        metalness={0.8}
-        roughness={0.2}
-        emissive="#0ea5e9"
-        emissiveIntensity={0.3}
-      />
-    </mesh>
-  );
-}
-
-const hardwareSpecs = {
-  category: 'Wearable Tag',
-  price: '$80-100',
-  components: [
-    { name: 'DWM3000 UWB Module', spec: 'DecaWave chip, <10cm ranging' },
-    { name: 'RFM95W LoRa Radio', spec: '868MHz, 1-2km range' },
-    { name: 'MPU6050 IMU', spec: '6-axis gyro + accelerometer' },
-    { name: 'BMP280 Barometer', spec: 'Vertical position tracking' },
-    { name: 'ESP32 Controller', spec: 'Dual-core, WiFi optional' },
-    { name: 'LiPo Battery', spec: '2000mAh, 12h runtime' },
-  ],
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } }
 };
 
 export default function HardwareSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-
   return (
-    <section id="hardware" ref={sectionRef} className="relative py-32 px-4 bg-gradient-to-b from-black via-gray-900 to-black">
-      <div className="max-w-7xl mx-auto">
+    <section id="hardware" className="py-32 px-6 md:px-12 lg:px-24 bg-black border-t border-gray-800/50">
+      <div className="max-w-6xl mx-auto">
+        {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="mb-16"
         >
-          <span className="text-blue-400 font-mono text-sm tracking-wider uppercase mb-4 block">
-            Hardware Specifications
-          </span>
-          <h2 className="text-5xl md:text-7xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-white">
-            Military-Grade Components
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-blue-500 font-mono text-sm">01</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent max-w-[100px]" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Hardware Components
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Ruggedized hardware designed for extreme environments and mission-critical reliability
+          <p className="text-gray-500 max-w-xl">
+            The physical components that make up the Sentinal Nano positioning system.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-24">
-          {/* 3D Visualization */}
+        {/* Hardware Cards Grid */}
+        <div className="grid md:grid-cols-2 gap-6 mb-16">
+          {/* A) Wearable Tag */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8 }}
-            className="relative h-96 border border-white/10 rounded-2xl bg-gray-900/50 backdrop-blur-sm overflow-hidden"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={fadeUp}
+            className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/30 via-transparent to-transparent" />
-            <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-              <ambientLight intensity={0.5} />
-              <pointLight position={[10, 10, 10]} intensity={1} />
-              <pointLight position={[-10, -10, -10]} intensity={0.5} color="#0ea5e9" />
-              <RotatingChip />
-            </Canvas>
-            <div className="absolute bottom-4 left-4 bg-black/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-400/30">
-              <p className="text-blue-300 font-mono text-sm">3D Model: UWB Tag Module</p>
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <span className="text-blue-400 font-mono text-xs tracking-wider">A</span>
+                <h3 className="text-lg font-semibold text-white mt-1">Wearable Tag</h3>
+              </div>
+              <span className="text-xs text-gray-600 bg-gray-800/50 px-2 py-1 rounded">1 per firefighter</span>
+            </div>
+            
+            <div className="space-y-3">
+              {[
+                ['Raspberry Pi Pico 2 W', 'Main controller'],
+                ['DWM3000 UWB module', 'Time-of-flight ranging'],
+                ['TPS61022 boost converter', 'Stable 3.3V rail'],
+                ['TP4056 + USB-C', 'Li-ion charging'],
+                ['18650 Li-ion cell', '~12h runtime'],
+                ['2-layer PCB', 'RF-aware layout'],
+              ].map(([part, desc]) => (
+                <div key={part} className="flex items-center gap-3 text-sm">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500/60" />
+                  <span className="text-white font-medium flex-shrink-0">{part}</span>
+                  <span className="text-gray-500">— {desc}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-gray-800/50">
+              <p className="text-gray-600 text-xs uppercase tracking-wider mb-2">Optional Sensors</p>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded">IMU (BMI270)</span>
+                <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded">Barometer</span>
+              </div>
             </div>
           </motion.div>
 
-          {/* Hardware Selector */}
+          {/* B) Fixed Anchors */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8 }}
-            className="space-y-6"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={fadeUp}
+            className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors"
           >
-            <div className="border border-white/10 rounded-2xl bg-gray-900/80 backdrop-blur-sm p-8">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-3xl font-black text-white">
-                  {hardwareSpecs.category}
-                </h3>
-                <span className="text-2xl font-black text-blue-400">
-                  {hardwareSpecs.price}
-                </span>
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <span className="text-blue-400 font-mono text-xs tracking-wider">B</span>
+                <h3 className="text-lg font-semibold text-white mt-1">Fixed Anchors</h3>
               </div>
+              <span className="text-xs text-gray-600 bg-gray-800/50 px-2 py-1 rounded">4–6 units</span>
+            </div>
+            
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
+                <span className="text-gray-300">Same electronics as tag</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
+                <span className="text-gray-300">Wall-powered or battery</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
+                <span className="text-gray-300">Known position <InlineMath math="(x_i, y_i, z_i)" /></span>
+              </div>
+            </div>
+          </motion.div>
 
-              <div className="space-y-4">
-                {hardwareSpecs.components.map((component, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-black/30 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0" />
-                    <div>
-                      <p className="text-white font-semibold">{component.name}</p>
-                      <p className="text-gray-400 text-sm">{component.spec}</p>
-                    </div>
-                  </div>
-                ))}
+          {/* C) Base Station */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={fadeUp}
+            className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <span className="text-blue-400 font-mono text-xs tracking-wider">C</span>
+                <h3 className="text-lg font-semibold text-white mt-1">Base Station</h3>
+              </div>
+              <span className="text-xs text-gray-600 bg-gray-800/50 px-2 py-1 rounded">Compute + Display</span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="p-3 bg-gray-800/30 rounded-lg">
+                <p className="text-gray-500 text-xs mb-1">Demo</p>
+                <p className="text-gray-300">USB tethered</p>
+              </div>
+              <div className="p-3 bg-gray-800/30 rounded-lg">
+                <p className="text-gray-500 text-xs mb-1">Field</p>
+                <p className="text-gray-300">LoRa wireless</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* D) Drone Anchor */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={fadeUp}
+            className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <span className="text-blue-400 font-mono text-xs tracking-wider">D</span>
+                <h3 className="text-lg font-semibold text-white mt-1">Drone Anchor</h3>
+              </div>
+              <span className="text-xs text-purple-400 bg-purple-500/10 px-2 py-1 rounded border border-purple-500/20">Optional</span>
+            </div>
+            
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500/60" />
+                <span className="text-gray-300">Mobile UWB anchor</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500/60" />
+                <span className="text-gray-300">Position <InlineMath math="(x_d(t), y_d(t), z_d(t))" /></span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500/60" />
+                <span className="text-gray-300">Improves geometry in obstructed areas</span>
               </div>
             </div>
           </motion.div>
         </div>
 
-        {/* Cost Breakdown */}
+        {/* 2) Geometry Setup */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="border border-white/10 rounded-2xl bg-gradient-to-br from-gray-900 to-black p-8 md:p-12"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="mt-24"
         >
-          <h3 className="text-3xl font-bold text-center mb-12 text-white">
-            Complete System Pricing
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <p className="text-gray-400 mb-2 font-mono text-sm uppercase tracking-wide">4× Wearable Tags</p>
-              <p className="text-4xl font-black text-blue-400 mb-1">$320-400</p>
-              <p className="text-gray-500 text-sm">Per firefighter squad</p>
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-blue-500 font-mono text-sm">02</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent max-w-[100px]" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Geometry Setup
+          </h2>
+          <p className="text-gray-500 max-w-xl mb-12">
+            No GPS or satellites required — purely local coordinate system.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6z" />
+                </svg>
+              </div>
+              <h4 className="text-white font-medium mb-3">Building Coordinate Frame</h4>
+              <div className="space-y-2 text-gray-400 text-sm">
+                <p>• Origin <InlineMath math="O_B" /> at a building corner</p>
+                <p>• Axes: +x, +y along walls, +z upward</p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-gray-400 mb-2 font-mono text-sm uppercase tracking-wide">3× Fixed Anchors</p>
-              <p className="text-4xl font-black text-blue-400 mb-1">$180-225</p>
-              <p className="text-gray-500 text-sm">Minimum coverage setup</p>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-400 mb-2 font-mono text-sm uppercase tracking-wide">1× Drone System</p>
-              <p className="text-4xl font-black text-blue-400 mb-1">$150-200</p>
-              <p className="text-gray-500 text-sm">Mobile relay module</p>
+
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <div className="w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                </svg>
+              </div>
+              <h4 className="text-white font-medium mb-3">Anchor Surveying</h4>
+              <div className="space-y-2 text-gray-400 text-sm">
+                <p>• Measure with laser distance meter</p>
+                <p>• Store <InlineMath math="(x_i, y_i, z_i)" /> in config file</p>
+              </div>
             </div>
           </div>
-          <div className="mt-12 pt-8 border-t border-white/10 text-center">
-            <p className="text-gray-400 mb-2 font-mono text-sm uppercase tracking-wide">Total System Cost</p>
-            <p className="text-5xl font-black text-white mb-2">$650-825</p>
-            <p className="text-gray-500">Complete 4-person squad tracking system</p>
+
+          <div className="p-6 bg-gradient-to-r from-yellow-900/20 to-transparent border border-yellow-700/30 rounded-xl">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-yellow-500 font-medium mb-2">Placement Requirements</h4>
+                <div className="space-y-1.5 text-gray-400 text-sm">
+                  <p>• Minimum 4 anchors, prefer 5–6</p>
+                  <p>• Height diversity required (some high, some low)</p>
+                  <p>• Avoid coplanar placement — spread anchors across room</p>
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>

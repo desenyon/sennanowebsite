@@ -1,280 +1,448 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 
-// 3D Sphere Intersection Visualization
-function SphereIntersection({ anchorCount }: { anchorCount: number }) {
-  const anchor1Ref = useRef<THREE.Mesh>(null);
-  const anchor2Ref = useRef<THREE.Mesh>(null);
-  const anchor3Ref = useRef<THREE.Mesh>(null);
-  const anchor4Ref = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    const time = state.clock.elapsedTime;
-    [anchor1Ref, anchor2Ref, anchor3Ref, anchor4Ref].forEach((ref, i) => {
-      if (ref.current && i < anchorCount) {
-        const material = ref.current.material as THREE.MeshStandardMaterial;
-        if (material.opacity !== undefined) {
-          material.opacity = 0.15 + Math.sin(time + i) * 0.05;
-        }
-      }
-    });
-  });
-
-  const anchors = [
-    { pos: [-3, 2, 0], color: '#3b82f6', ref: anchor1Ref },
-    { pos: [3, 2, 0], color: '#06b6d4', ref: anchor2Ref },
-    { pos: [0, -2, 2], color: '#8b5cf6', ref: anchor3Ref },
-    { pos: [0, -2, -2], color: '#ec4899', ref: anchor4Ref },
-  ];
-
-  return (
-    <>
-      <ambientLight intensity={0.4} />
-      <pointLight position={[10, 10, 10]} intensity={0.8} />
-      
-      {/* Anchors and their spheres */}
-      {anchors.slice(0, anchorCount).map((anchor, i) => (
-        <group key={i}>
-          {/* Anchor point */}
-          <mesh position={anchor.pos as [number, number, number]}>
-            <sphereGeometry args={[0.15, 16, 16]} />
-            <meshStandardMaterial color={anchor.color} emissive={anchor.color} emissiveIntensity={0.5} />
-          </mesh>
-          
-          {/* Distance sphere */}
-          <mesh ref={anchor.ref} position={anchor.pos as [number, number, number]}>
-            <sphereGeometry args={[2.5, 32, 32]} />
-            <meshStandardMaterial
-              color={anchor.color}
-              transparent
-              opacity={0.15}
-              wireframe
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-        </group>
-      ))}
-
-      {/* Target position (where spheres intersect) */}
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[0.2, 16, 16]} />
-        <meshStandardMaterial color="#fbbf24" emissive="#fbbf24" emissiveIntensity={1} />
-      </mesh>
-
-      {/* Grid floor */}
-      <gridHelper args={[10, 20, '#0ea5e9', '#1e293b']} position={[0, -3, 0]} />
-    </>
-  );
-}
-
-const sphereSteps = [
-  {
-    anchors: 1,
-    title: 'One Anchor = One Sphere',
-    description: 'A single distance measurement creates a sphere of possible positions. The anchor is the center, measured distance is the radius. Firefighter could be anywhere on this sphere.',
-    uncertainty: 'Infinite positions',
-  },
-  {
-    anchors: 2,
-    title: 'Two Anchors = Circle Intersection',
-    description: 'Two spheres intersect to form a circle. Position is now constrained to a ring in 3D space. Still highly ambiguous but uncertainty is dramatically reduced.',
-    uncertainty: 'Circular ring',
-  },
-  {
-    anchors: 3,
-    title: 'Three Anchors = Two Points',
-    description: 'Three spheres intersect at exactly two points—mirror images across the anchor plane. One point is usually impossible (above ceiling/below floor) and discarded using barometric altitude.',
-    uncertainty: '2 candidates',
-  },
-  {
-    anchors: 4,
-    title: 'Four Anchors = Unique Solution',
-    description: 'Four spheres intersect at a single point with redundancy. This is the minimum for reliable 3D positioning. System finds the point that minimizes total distance error across all anchors.',
-    uncertainty: 'Centimeter-level',
-  },
-];
-
-const softwareFeatures = [
-  {
-    title: 'Sphere-Intersection Trilateration',
-    description: 'Treats each UWB distance as a sphere constraint. Solves for the point that best fits all spheres simultaneously using least-squares optimization.',
-    specs: [
-      'TDOA ranging: d = c × Δt',
-      'Minimize Σ(||p - aᵢ|| - dᵢ)²',
-      'Gauss-Newton solver',
-      'Sub-10cm convergence',
-    ],
-  },
-  {
-    title: 'Predict + Correct Algorithm',
-    description: 'IMU predicts motion between UWB updates. UWB measurements correct accumulated drift. Kalman filter fuses both sources for smooth tracking.',
-    specs: [
-      'IMU integration: p = p₀ + vΔt + ½aΔt²',
-      'Kalman correction: K = PH^T(HPH^T + R)^-1',
-      'Dead reckoning fallback',
-      'Quaternion orientation',
-    ],
-  },
-  {
-    title: 'Confidence Scoring System',
-    description: 'Real-time signal quality analysis. RSSI thresholds, geometric dilution of precision (GDOP), and anchor health monitoring determine position confidence.',
-    specs: [
-      'GDOP = √(σ²x + σ²y + σ²z)',
-      'RSSI > -85dBm threshold',
-      'Multi-path detection',
-      'Auto-failover to drone',
-    ],
-  },
-  {
-    title: 'Drone as Mobile Anchor',
-    description: 'When fixed anchor geometry degrades, drone repositions to create better sphere intersection angles. Acts as both anchor and LoRa relay.',
-    specs: [
-      'GPS-based drone positioning',
-      'Dynamic GDOP optimization',
-      'Hovering stability ±0.5m',
-      'Relay range extension',
-    ],
-  },
-];
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } }
+};
 
 export default function SoftwareSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-  const [anchorCount, setAnchorCount] = useState(4);
-
   return (
-    <section id="software" ref={sectionRef} className="relative py-32 px-4 bg-black">
-      <div className="max-w-7xl mx-auto">
+    <section id="software" className="py-32 px-6 md:px-12 lg:px-24 bg-black border-t border-gray-800/50">
+      <div className="max-w-6xl mx-auto">
+        {/* Section 3: Algorithms */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="mb-16"
         >
-          <span className="text-blue-400 font-mono text-sm tracking-wider uppercase mb-4 block">
-            Positioning Mathematics
-          </span>
-          <h2 className="text-5xl md:text-7xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-white">
-            Sphere-Intersection Tracking
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-blue-500 font-mono text-sm">03</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent max-w-[100px]" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Algorithm Pipeline
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Each anchor creates a distance sphere. Multiple spheres intersect to constrain position. Four anchors eliminate ambiguity.
+          <p className="text-gray-500 max-w-xl">
+            Real-time position computation from UWB range measurements.
           </p>
         </motion.div>
 
-        {/* 3D Sphere Visualization */}
+        {/* Runtime Pipeline */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-24"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="mb-20"
         >
-          <div className="border border-white/10 rounded-2xl bg-gradient-to-br from-gray-900 to-black p-8 backdrop-blur-sm">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* 3D Canvas */}
-              <div className="relative h-96 bg-gray-950 border border-white/10 rounded-xl overflow-hidden">
-                <Canvas camera={{ position: [5, 3, 5], fov: 50 }}>
-                  <SphereIntersection anchorCount={anchorCount} />
-                </Canvas>
-                <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-400/30">
-                  <p className="text-blue-300 font-mono text-sm">{anchorCount} Anchor{anchorCount !== 1 ? 's' : ''} Active</p>
+          <h3 className="text-lg font-medium text-white mb-6">Runtime Loop</h3>
+          
+          <div className="grid gap-4">
+            {[
+              { step: 1, action: 'Collect UWB ranges', math: 'd_i', desc: 'from visible anchors' },
+              { step: 2, action: 'Apply ML correction', math: 'd_{corr} = d_i - \\hat{\\Delta}_i', desc: 'compute weight' },
+              { step: 3, action: 'Solve multilateration', math: '(x, y, z)', desc: 'weighted least squares' },
+              { step: 4, action: 'Tracking filter', math: null, desc: 'predict → correct with IMU' },
+              { step: 5, action: 'Output position', math: null, desc: '(x, y, z, confidence, timestamp)', isOutput: true },
+            ].map((item) => (
+              <div 
+                key={item.step} 
+                className={`flex items-center gap-4 p-4 rounded-xl border transition-colors ${
+                  item.isOutput 
+                    ? 'bg-green-900/20 border-green-700/30' 
+                    : 'bg-gray-900/40 border-gray-800 hover:border-gray-700'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-mono text-sm ${
+                  item.isOutput ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'
+                }`}>
+                  {item.step}
+                </div>
+                <div className="flex-1">
+                  <span className="text-white font-medium">{item.action}</span>
+                  {item.math && (
+                    <span className="text-gray-400 ml-2">
+                      <InlineMath math={item.math} />
+                    </span>
+                  )}
+                  <span className="text-gray-500 ml-2">— {item.desc}</span>
                 </div>
               </div>
+            ))}
+          </div>
+        </motion.div>
 
-              {/* Step Controls */}
-              <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-white mb-6">Sphere Intersection Logic</h3>
-                {sphereSteps.map((step, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setAnchorCount(step.anchors)}
-                    className={`w-full text-left p-4 rounded-xl transition-all duration-300 border-2 ${
-                      anchorCount === step.anchors
-                        ? 'bg-blue-600/20 border-blue-400'
-                        : 'bg-gray-900/50 border-white/10 hover:border-blue-400/50'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-lg font-bold text-white">{step.title}</h4>
-                      <span className="px-2 py-1 bg-blue-500/20 border border-blue-400/30 rounded text-blue-300 text-xs font-mono">
-                        {step.uncertainty}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-400">{step.description}</p>
-                  </button>
-                ))}
+        {/* Section 4: Physics Model */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="mb-20"
+        >
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-blue-500 font-mono text-sm">04</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent max-w-[100px]" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Multilateration
+          </h2>
+          <p className="text-gray-500 max-w-xl mb-12">
+            Position from range measurements — each range defines a sphere.
+          </p>
+
+          {/* Multilateration Image */}
+          <div className="mb-10 p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+            <div className="relative w-full aspect-video bg-gray-950 rounded-lg overflow-hidden flex items-center justify-center">
+              <Image
+                src="/multilateration.png"
+                alt="Sphere intersection for multilateration"
+                width={800}
+                height={450}
+                className="object-contain"
+                priority
+              />
+            </div>
+            <p className="text-gray-500 text-sm text-center mt-4">
+              Each anchor defines a sphere of radius <InlineMath math="d_i" />. The position lies at the intersection.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                Inputs
+              </h4>
+              <div className="space-y-3 text-gray-400 text-sm">
+                <p>Anchor positions <InlineMath math="a_i = (x_i, y_i, z_i)" /></p>
+                <p>Corrected ranges <InlineMath math="d_{corr,i}" /></p>
+                <p>Weights <InlineMath math="w_i = 1/\sigma_i^2" /></p>
               </div>
             </div>
 
-            {/* Judge Explanation */}
-            <div className="mt-8 p-6 bg-blue-500/10 border border-blue-400/30 rounded-xl">
-              <p className="text-sm text-blue-300 uppercase font-mono mb-2">One-Sentence Explanation</p>
-              <p className="text-white text-lg italic">
-                "Each anchor gives a distance sphere, multiple spheres intersect to constrain the firefighter's position, and the drone adds a movable sphere to improve geometry when fixed anchors aren't enough."
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                Output
+              </h4>
+              <div className="space-y-3 text-gray-400 text-sm">
+                <p>Position estimate <InlineMath math="\hat{p} = (x, y, z)" /></p>
+                <p>Residual RMS (consistency metric)</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Nonlinear Least Squares - Full Math */}
+          <div className="p-8 bg-gradient-to-br from-blue-900/20 to-gray-900/40 border border-blue-800/30 rounded-xl mb-8">
+            <h4 className="text-blue-400 font-medium mb-6 text-center">Nonlinear Least Squares on Range Residuals</h4>
+            
+            {/* Problem setup */}
+            <div className="mb-8">
+              <p className="text-gray-400 text-sm mb-4">
+                Let 4 anchors have known 3D positions <InlineMath math="\mathbf{p}_i = [x_i, y_i, z_i]^\top \in \mathbb{R}^3" /> for <InlineMath math="i = 1, 2, 3, 4" />.
+                The measured ranges (from time-of-flight) are <InlineMath math="r_i \geq 0" />. The unknown tag position is <InlineMath math="\mathbf{x} = [x, y, z]^\top" />.
               </p>
+            </div>
+
+            {/* Residual definition */}
+            <div className="mb-6 p-5 bg-gray-900/60 rounded-xl border border-gray-800">
+              <p className="text-gray-500 text-xs uppercase tracking-wider mb-3">Residual Definition</p>
+              <div className="py-2 overflow-x-auto">
+                <BlockMath math="e_i(\mathbf{x}) = \|\mathbf{x} - \mathbf{p}_i\| - r_i, \quad i = 1, \dots, M" />
+              </div>
+            </div>
+
+            {/* Objective function */}
+            <div className="mb-6 p-5 bg-gradient-to-br from-orange-900/20 to-gray-900/40 rounded-xl border border-orange-700/30">
+              <p className="text-orange-400 text-xs uppercase tracking-wider mb-3">Objective Function</p>
+              <div className="py-2 overflow-x-auto">
+                <BlockMath math="\min_{\mathbf{x}} \sum_{i=1}^{M} w_i \, e_i(\mathbf{x})^2" />
+              </div>
+              <p className="text-gray-500 text-sm mt-3 text-center">
+                Solved via Gauss–Newton or Levenberg–Marquardt iteration.
+              </p>
+            </div>
+
+            {/* Jacobian */}
+            <div className="mb-6 p-5 bg-gray-900/60 rounded-xl border border-gray-800">
+              <p className="text-gray-500 text-xs uppercase tracking-wider mb-3">Jacobian Row <InlineMath math="i" /></p>
+              <div className="py-2 overflow-x-auto">
+                <BlockMath math="\mathbf{J}_i(\mathbf{x}) = \frac{\partial e_i}{\partial \mathbf{x}} = \frac{(\mathbf{x} - \mathbf{p}_i)^\top}{\|\mathbf{x} - \mathbf{p}_i\|} \in \mathbb{R}^{1 \times 3}" />
+              </div>
+            </div>
+
+            {/* Update rule */}
+            <div className="p-5 bg-gradient-to-br from-green-900/20 to-gray-900/40 rounded-xl border border-green-700/30">
+              <p className="text-green-400 text-xs uppercase tracking-wider mb-3">Gauss–Newton Update</p>
+              <div className="py-2 overflow-x-auto">
+                <BlockMath math="\Delta \mathbf{x} = -(\mathbf{J}^\top \mathbf{W} \mathbf{J})^{-1} \mathbf{J}^\top \mathbf{W} \mathbf{e}" />
+              </div>
+              <div className="py-2 overflow-x-auto">
+                <BlockMath math="\mathbf{x} \leftarrow \mathbf{x} + \Delta \mathbf{x}" />
+              </div>
+              <p className="text-gray-500 text-sm mt-3">
+                Stack <InlineMath math="\mathbf{e} = [e_1, \dots, e_M]^\top" /> and <InlineMath math="\mathbf{J} \in \mathbb{R}^{M \times 3}" />. 
+                Weight matrix <InlineMath math="\mathbf{W}" /> is typically diagonal with <InlineMath math="w_i = 1/\sigma_i^2" />.
+              </p>
+            </div>
+          </div>
+
+          {/* Linear initializer section */}
+          <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl mb-8">
+            <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+              Linear Initializer (Fast Approximation)
+            </h4>
+            <p className="text-gray-400 text-sm mb-4">
+              For a good starting guess, subtract the first sphere equation from the rest to eliminate <InlineMath math="\mathbf{x}^\top \mathbf{x}" />:
+            </p>
+            <div className="p-4 bg-gray-900/60 rounded-lg mb-4 overflow-x-auto">
+              <BlockMath math="\mathbf{A} = 2 \begin{bmatrix} (\mathbf{p}_2 - \mathbf{p}_1)^\top \\ (\mathbf{p}_3 - \mathbf{p}_1)^\top \\ (\mathbf{p}_4 - \mathbf{p}_1)^\top \end{bmatrix}, \quad \mathbf{b} = \begin{bmatrix} r_1^2 - r_2^2 + \|\mathbf{p}_2\|^2 - \|\mathbf{p}_1\|^2 \\ r_1^2 - r_3^2 + \|\mathbf{p}_3\|^2 - \|\mathbf{p}_1\|^2 \\ r_1^2 - r_4^2 + \|\mathbf{p}_4\|^2 - \|\mathbf{p}_1\|^2 \end{bmatrix}" />
+            </div>
+            <div className="p-4 bg-gradient-to-r from-cyan-900/20 to-gray-900/40 rounded-lg border border-cyan-700/30 overflow-x-auto">
+              <p className="text-cyan-400 text-xs uppercase tracking-wider mb-2">Solution (if anchors not coplanar)</p>
+              <BlockMath math="\mathbf{x}_0 = \mathbf{A}^{-1} \mathbf{b}" />
+            </div>
+          </div>
+
+          {/* Outlier rejection */}
+          <div className="p-6 bg-gradient-to-r from-yellow-900/20 to-transparent border border-yellow-700/30 rounded-xl mb-8">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-yellow-500 font-medium mb-2">Robust Estimation</h4>
+                <p className="text-gray-400 text-sm mb-3">
+                  Replace <InlineMath math="w_i" /> with robust weights updated each iteration (e.g., Huber/Tukey based on <InlineMath math="|e_i|" />), 
+                  so outlier anchors get downweighted automatically — prevents &quot;teleporting&quot; from bad ranges.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Geometry notes */}
+          <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+            <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+              </svg>
+              Geometry Notes
+            </h4>
+            <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <div className="p-3 bg-gray-800/30 rounded-lg">
+                <p className="text-blue-400 font-medium mb-1">Minimum</p>
+                <p className="text-gray-400">4 anchors for 3D with absolute ranges; more improves conditioning</p>
+              </div>
+              <div className="p-3 bg-gray-800/30 rounded-lg">
+                <p className="text-green-400 font-medium mb-1">Good Geometry</p>
+                <p className="text-gray-400">Anchors spread in 3D (not coplanar) reduces dilution of precision</p>
+              </div>
+              <div className="p-3 bg-gray-800/30 rounded-lg">
+                <p className="text-purple-400 font-medium mb-1">Degeneracy</p>
+                <p className="text-gray-400"><InlineMath math="\det(\mathbf{A}) = 0" /> when anchors are coplanar/collinear</p>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Software Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {softwareFeatures.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
-              className="relative group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative p-8 border border-white/10 rounded-2xl bg-gray-900/50 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
-                <h3 className="text-2xl font-bold mb-3 text-white">{feature.title}</h3>
-                <p className="text-gray-400 mb-6 leading-relaxed">{feature.description}</p>
-                <div className="space-y-2">
-                  {feature.specs.map((spec, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-black/30 p-3 rounded-lg">
-                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5 flex-shrink-0" />
-                      <span className="text-sm text-gray-300 font-mono">{spec}</span>
-                    </div>
-                  ))}
+        {/* Section 5: AI Model */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="mb-20"
+        >
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-blue-500 font-mono text-sm">05</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent max-w-[100px]" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            ML Bias Correction
+          </h2>
+          <p className="text-gray-500 max-w-xl mb-12">
+            Correcting systematic NLOS errors using learned signal features.
+          </p>
+
+          <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl mb-8">
+            <p className="text-gray-300">
+              Indoor ranging errors are often <strong className="text-white">systematic</strong> — walls add consistent bias, 
+              not purely random noise. A trained model predicts this bias from signal features.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14" />
+                </svg>
+                Model Inputs
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-gray-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+                  Measured distance <InlineMath math="d_{meas}" />
+                </div>
+                <div className="flex items-center gap-2 text-gray-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+                  Anchor ID
+                </div>
+                <div className="flex items-center gap-2 text-gray-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+                  Received signal strength (RSSI)
+                </div>
+                <div className="flex items-center gap-2 text-gray-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+                  First-path power, SNR
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
+            </div>
 
-        {/* Technical Formulas */}
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+                <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+                Model Outputs
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-gray-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                  <InlineMath math="\hat{b}" /> — predicted bias (meters)
+                </div>
+                <div className="flex items-center gap-2 text-gray-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                  <InlineMath math="\hat{\sigma}" /> — predicted uncertainty
+                </div>
+                <div className="flex items-center gap-2 text-gray-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                  Weight: <InlineMath math="w = 1/\hat{\sigma}^2" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl mb-8">
+            <h4 className="text-white font-medium mb-4">Runtime Correction</h4>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-800/30 rounded-lg text-center">
+                <p className="text-gray-500 text-xs mb-2">Corrected Distance</p>
+                <InlineMath math="d_{corr} = d_{meas} - \hat{b}" />
+              </div>
+              <div className="p-4 bg-gray-800/30 rounded-lg text-center">
+                <p className="text-gray-500 text-xs mb-2">Weight</p>
+                <InlineMath math="w = 1 / \max(\hat{\sigma}^2, \sigma_{floor}^2)" />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 bg-gradient-to-r from-blue-900/20 to-transparent border border-blue-700/30 rounded-xl">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-blue-400 font-medium mb-2">Key Insight</h4>
+                <p className="text-gray-400 text-sm">
+                  The ML model outputs <strong className="text-white">range corrections</strong>, not positions directly. 
+                  Position is computed geometrically via multilateration. This keeps the system interpretable and debuggable.
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Section 6: Data Plan */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="border border-white/10 rounded-2xl bg-gradient-to-br from-blue-900/20 to-black p-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
         >
-          <h3 className="text-2xl font-bold text-center mb-8 text-white">Core Positioning Equations</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-6 bg-black/40 rounded-xl border border-blue-400/20">
-              <p className="text-blue-300 text-sm font-mono mb-3 uppercase">Trilateration Objective</p>
-              <p className="text-white text-xl font-mono">minimize Σ (||p - aᵢ|| - dᵢ)²</p>
-              <p className="text-gray-400 text-sm mt-2">Find position p that minimizes distance error to all anchors aᵢ</p>
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-blue-500 font-mono text-sm">06</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent max-w-[100px]" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Training Data Collection
+          </h2>
+          <p className="text-gray-500 max-w-xl mb-12">
+            Ground truth methodology for ML model training.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <h4 className="text-white font-medium mb-4">Ground Truth Method</h4>
+              <div className="space-y-3 text-gray-400 text-sm">
+                <div className="flex items-start gap-3">
+                  <span className="text-blue-400 font-mono">1</span>
+                  <span>Create taped floor grid (0.5m spacing)</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-blue-400 font-mono">2</span>
+                  <span>Measure grid coordinates with laser meter</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-blue-400 font-mono">3</span>
+                  <span>Stand at each point for 3–5 seconds, log all ranges</span>
+                </div>
+              </div>
             </div>
-            <div className="p-6 bg-black/40 rounded-xl border border-blue-400/20">
-              <p className="text-blue-300 text-sm font-mono mb-3 uppercase">Kalman Gain</p>
-              <p className="text-white text-xl font-mono">K = PH<sup>T</sup>(HPH<sup>T</sup> + R)<sup>-1</sup></p>
-              <p className="text-gray-400 text-sm mt-2">Optimal fusion weight between prediction and measurement</p>
+
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <h4 className="text-white font-medium mb-4">Labels</h4>
+              <div className="space-y-3 text-gray-400 text-sm">
+                <p>True distance: <InlineMath math="d_{true} = \|p_{gt} - a_i\|" /></p>
+                <p>Bias label: <InlineMath math="b_{label} = d_{meas} - d_{true}" /></p>
+              </div>
             </div>
-            <div className="p-6 bg-black/40 rounded-xl border border-blue-400/20">
-              <p className="text-blue-300 text-sm font-mono mb-3 uppercase">GDOP (Geometry Quality)</p>
-              <p className="text-white text-xl font-mono">GDOP = √(σ²<sub>x</sub> + σ²<sub>y</sub> + σ²<sub>z</sub>)</p>
-              <p className="text-gray-400 text-sm mt-2">Lower GDOP = better anchor geometry = higher accuracy</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <h4 className="text-white font-medium">LOS Samples</h4>
+              </div>
+              <p className="text-gray-400 text-sm">Tag and anchor in same room, clear line of sight</p>
             </div>
-            <div className="p-6 bg-black/40 rounded-xl border border-blue-400/20">
-              <p className="text-blue-300 text-sm font-mono mb-3 uppercase">Time-of-Flight Distance</p>
-              <p className="text-white text-xl font-mono">d = c × Δt</p>
-              <p className="text-gray-400 text-sm mt-2">UWB pulse roundtrip time converted to meters (c = 3×10⁸ m/s)</p>
+            <div className="p-6 bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 rounded-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <h4 className="text-white font-medium">NLOS Samples</h4>
+              </div>
+              <p className="text-gray-400 text-sm">Signal passes through walls, corners, or obstructions</p>
+            </div>
+          </div>
+
+          <div className="p-6 bg-gradient-to-r from-green-900/20 to-transparent border border-green-700/30 rounded-xl">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-green-400 font-medium mb-2">Train/Test Split</h4>
+                <p className="text-gray-400 text-sm">
+                  Split by room or hallway, <strong className="text-white">not random time</strong>. 
+                  This proves the model generalizes to new environments.
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>
